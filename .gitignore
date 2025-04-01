@@ -238,10 +238,10 @@ GitHub.sublime-settings
 
 # End of https://www.gitignore.io/api/python,sublimetext,pycharm+all,visualstudiocode
 
-./flipped_original/
-./flipped_thachter/
-./upright_original/
-./upright_thatcher/
+flipped_original/
+flipped_thachter/
+upright_original/
+upright_thatcher/
 
-./__pycache__/
-./.ipynb_checkpoints/
+__pycache__/
+.ipynb_checkpoints/
