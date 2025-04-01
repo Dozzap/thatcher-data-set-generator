@@ -142,7 +142,6 @@ def main():
 
         # Ignore PNG and JPEG images
 
-
         if not isfile(input_file_path):
             if PRINT_LOG and i % PRINT_LOG_PERIOD == 0:
                 print("Not found")
