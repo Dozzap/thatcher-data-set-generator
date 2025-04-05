@@ -80,10 +80,10 @@ def blur_orthogonal_border(image, blurred_image, x1, y1, x2, y2, border_size):
 		for x in range(x1 - border_size, x1 + border_size + 1):
 			for y in range(y1, y2 + 1):
 				image[x][y] = blurred_image[x][y]
-	if y1 == y2:
-		for y in range(y1 - border_size, y1 + border_size + 1):
-			for x in range(x1, x2 + 1):
-				image[x][y] = blurred_image[x][y]
+				if y1 == y2:
+					for y in range(y1 - border_size, y1 + border_size + 1):
+						for x in range(x1, x2 + 1):
+							image[x][y] = blurred_image[x][y]
 
 
 def blur_rectangle_border(image, x1, y1, x2, y2, border_size=2):
@@ -114,85 +114,92 @@ def apply_thatcher_effect_on_image(input_image_path, output_image_path, left_eye
 
 
 def main():
-    i = 0
-    TARGET_WIDTH = 800  # Set a fixed width for resizing (change as needed)
-    
-    # Directory paths for different categories
-    RESIZED_IMAGES_DIRECTORY_PATH = "upright_original"  # Folder for resized upright images
-    UPRIGHT_THATCHER_IMAGES_DIRECTORY_PATH = "upright_thatcher"  # Folder for Thatcher effect upright images
-    FLIPPED_IMAGES_DIRECTORY_PATH = "flipped_original"  # Folder for resized flipped images
-    FLIPPED_THATCHER_IMAGES_DIRECTORY_PATH = "flipped_thatcher"  # Folder for Thatcher effect flipped images
+	i = 0
+	TARGET_WIDTH = 800  # Set a fixed width for resizing (change as needed)
 
-    # Create necessary folders if they don't exist
-    for dir_path in [RESIZED_IMAGES_DIRECTORY_PATH, UPRIGHT_THATCHER_IMAGES_DIRECTORY_PATH, 
-                     FLIPPED_IMAGES_DIRECTORY_PATH, FLIPPED_THATCHER_IMAGES_DIRECTORY_PATH]:
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
+	# Directory paths for different categories
+	RESIZED_IMAGES_DIRECTORY_PATH = "upright_original"  # Folder for resized upright images
+	UPRIGHT_THATCHER_IMAGES_DIRECTORY_PATH = "upright_thatcher"  # Folder for Thatcher effect upright images
+	FLIPPED_IMAGES_DIRECTORY_PATH = "flipped_original"  # Folder for resized flipped images
+	FLIPPED_THATCHER_IMAGES_DIRECTORY_PATH = "flipped_thatcher"  # Folder for Thatcher effect flipped images
 
-    for filename in listdir(INPUT_IMAGES_DIRECTORY_PATH):
-        i += 1
+	# Create necessary folders if they don't exist
+	for dir_path in [RESIZED_IMAGES_DIRECTORY_PATH, UPRIGHT_THATCHER_IMAGES_DIRECTORY_PATH,FLIPPED_IMAGES_DIRECTORY_PATH, FLIPPED_THATCHER_IMAGES_DIRECTORY_PATH]:
+		if not os.path.exists(dir_path):
+			os.makedirs(dir_path)
 
-        if filename.lower().endswith(".png") or filename.lower().endswith(".jpeg"):
-            continue
+	for filename in listdir(INPUT_IMAGES_DIRECTORY_PATH):
+		i += 1
 
-        if PRINT_LOG and i % PRINT_LOG_PERIOD == 0:
-            print("Filename:", filename)
+		if filename.lower().endswith(".png") or filename.lower().endswith(".jpeg"):
+			continue
 
-        input_file_path = join(INPUT_IMAGES_DIRECTORY_PATH, filename)
+		if PRINT_LOG and i % PRINT_LOG_PERIOD == 0:
+			print("Filename:", filename)
 
-        # Ignore PNG and JPEG images
+		input_file_path = join(INPUT_IMAGES_DIRECTORY_PATH, filename)
 
-        if not isfile(input_file_path):
-            if PRINT_LOG and i % PRINT_LOG_PERIOD == 0:
-                print("Not found")
-            continue
+		# Ignore PNG and JPEG images
 
-        # Load and resize image
-        image = cv2.imread(input_file_path)
-        if image is None:
-            print(f"Could not load image: {filename}")
-            continue
+		if not isfile(input_file_path):
+			if PRINT_LOG and i % PRINT_LOG_PERIOD == 0:
+				print("Not found")
+				continue
 
-        height, width = image.shape[:2]
-        aspect_ratio = height / width
-        new_height = int(TARGET_WIDTH * aspect_ratio)
-        resized_image = cv2.resize(image, (TARGET_WIDTH, new_height))
+		# Load and resize image
+		image = cv2.imread(input_file_path)
+		if image is None:
+			print(f"Could not load image: {filename}")
+			continue
 
-        # Save resized upright image
-        resized_upright_image_path = join(RESIZED_IMAGES_DIRECTORY_PATH, "resized_" + filename)
-        cv2.imwrite(resized_upright_image_path, resized_image)
+		height, width = image.shape[:2]
+		aspect_ratio = height / width
+		new_height = int(TARGET_WIDTH * aspect_ratio)
+		resized_image = cv2.resize(image, (TARGET_WIDTH, new_height))
 
-        # Run facial landmark detection on the resized image
-        image_facial_landmarks = get_image_facial_landmarks(resized_upright_image_path)
-        if not image_facial_landmarks or len(image_facial_landmarks) != 68:
-            continue
 
-        left_eye_rectangle = get_bounding_rectangle(image_facial_landmarks[36:42])
-        right_eye_rectangle = get_bounding_rectangle(image_facial_landmarks[42:48])
-        mouth_rectangle = get_bounding_rectangle(image_facial_landmarks[48:68])
+		# Save resized upright image
+		resized_upright_image_path = join(RESIZED_IMAGES_DIRECTORY_PATH, "resized_" + filename)
+		cv2.imwrite(resized_upright_image_path, resized_image)
 
-        # Apply Thatcher effect to the upright resized image and save
-        upright_thatcher_output_path = join(UPRIGHT_THATCHER_IMAGES_DIRECTORY_PATH, "thatcher_" + filename)
-        apply_thatcher_effect_on_image(resized_upright_image_path, upright_thatcher_output_path, 
-                                       left_eye_rectangle, right_eye_rectangle, mouth_rectangle)
+		# Run facial landmark detection on the resized image
+		image_facial_landmarks = get_image_facial_landmarks(resized_upright_image_path)
+		if not image_facial_landmarks or len(image_facial_landmarks) != 68:
 
-        # Flip image vertically and save the flipped resized image
-        flipped_image = cv2.flip(image, 0)
-        flipped_resized_image = cv2.resize(flipped_image, (TARGET_WIDTH, new_height))
-        flipped_resized_image_path = join(FLIPPED_IMAGES_DIRECTORY_PATH, "flipped_resized_" + filename)
-        cv2.imwrite(flipped_resized_image_path, flipped_resized_image)
+			continue
+		left_eye_rectangle = get_bounding_rectangle(image_facial_landmarks[36:42])
+		right_eye_rectangle = get_bounding_rectangle(image_facial_landmarks[42:48])
+		mouth_rectangle = get_bounding_rectangle(image_facial_landmarks[48:68])
 
-        # Apply Thatcher effect to the flipped resized image and save
-        flipped_thatcher_output_path = join(FLIPPED_THATCHER_IMAGES_DIRECTORY_PATH, "flipped_thatcher_" + filename)
-        apply_thatcher_effect_on_image(flipped_resized_image_path, flipped_thatcher_output_path, 
-                                       left_eye_rectangle, right_eye_rectangle, mouth_rectangle)
+		# Apply Thatcher effect to the upright resized image and save
+		upright_thatcher_output_path = join(UPRIGHT_THATCHER_IMAGES_DIRECTORY_PATH, "thatcher_" + filename)
+		apply_thatcher_effect_on_image(resized_upright_image_path, upright_thatcher_output_path, 
+		left_eye_rectangle, right_eye_rectangle, mouth_rectangle)
 
-        # Optionally, delete temporary resized images after processing
-        # os.remove(resized_upright_image_path)
-        # os.remove(flipped_resized_image_path)
+		# Flip image vertically and save the flipped resized image
+		flipped_image = cv2.flip(image, 0)
+		flipped_resized_image = cv2.resize(flipped_image, (TARGET_WIDTH, new_height))
+		flipped_resized_image_path = join(FLIPPED_IMAGES_DIRECTORY_PATH, "flipped_resized_" + filename)
+		cv2.imwrite(flipped_resized_image_path, flipped_resized_image)
 
-        if PRINT_LOG and i % PRINT_LOG_PERIOD == 0:
-            print("Done")
+
+		# Load the upright Thatcherized image
+		upright_thatcher_image = cv2.imread(upright_thatcher_output_path)
+
+		# Rotate 180 degrees (flip both axes)
+		flipped_thatcher_image = cv2.flip(upright_thatcher_image, -1)
+
+		# Save the flipped Thatcher image
+		flipped_thatcher_output_path = join(FLIPPED_THATCHER_IMAGES_DIRECTORY_PATH, "flipped_thatcher_" + filename)
+		cv2.imwrite(flipped_thatcher_output_path, flipped_thatcher_image)
+
+
+		# Optionally, delete temporary resized images after processing
+		# os.remove(resized_upright_image_path)
+		# os.remove(flipped_resized_image_path)
+
+		if PRINT_LOG and i % PRINT_LOG_PERIOD == 0:
+			print("Done")
 
 if __name__ == "__main__":
 	main()
