@@ -1,3 +1,5 @@
+![td_](https://github.com/user-attachments/assets/7cb3597f-1088-45a4-8e4f-b892daed1c0a)
+
 This program creates the resized outputs (flipped,upright of both original and thacherized), please install all the dependencies first (not the one in yml)
 
 dataset inputs (original images) are taken from [Kaggle.com](https://www.kaggle.com/datasets/ashwingupta3012/male-and-female-faces-dataset), please download the dataset here and use it when generating the data.
